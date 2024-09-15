@@ -1,28 +1,95 @@
 import { validationResult } from "express-validator";
 
-export const getNotes = (req, res, next) => {
-  console.log("GET /notes endpoint hit");
-  noteController.getNotes(req, res, next);
+import Note from "../models/note.js";
+
+// GET /notes
+export const getNotes = async (req, res, next) => {
+  try {
+    // Fetch and sort notes from db by latest note
+    const notes = await Note.find().sort({ createdAt: -1 });
+
+    if (!notes) {
+      return res.status(404).json({
+        message: "Notes not found",
+      });
+    }
+
+    res.status(200).json(notes);
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to retrieve notes",
+      error: error.message,
+    });
+  }
 };
 
-export const createNote = (req, res, next) => {
-  // get errors from validationResult which is checked in routes
+// POST /notes
+export const createNote = async (req, res, next) => {
+  // Get errors from validationResult which is checked in routes
   const errors = validationResult(req);
   const { title, content } = req.body;
 
-  // if errors
   if (!errors.isEmpty()) {
-    return res.status(400).json({
+    return res.status(500).json({
       message: "Validation failed",
       errorMessages: errors.array(),
     });
   }
 
-  res.status(201).json({
-    message: "Note created",
-    data: {
-      title,
-      content,
-    },
-  });
+  try {
+    await Note.create({ title, content });
+
+    res.status(201).json({
+      message: "Note created",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to create note",
+      error: error.message,
+    });
+  }
+};
+
+// GET /notes/:id
+export const getNote = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const note = await Note.findById(id);
+
+    if (!note) {
+      return res.status(404).json({
+        message: "Note not found",
+      });
+    }
+
+    res.status(200).json(note);
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to retrieve note",
+      error: error.message,
+    });
+  }
+};
+
+// DELETE /notes/:id
+export const deleteNote = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const note = await Note.findByIdAndDelete(id);
+
+    if (!note) {
+      return res.status(404).json({
+        message: "Note not found",
+      });
+    }
+
+    res.status(204).json({
+      message: "Note deleted",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to delete note",
+      error: error.message,
+    });
+  }
 };

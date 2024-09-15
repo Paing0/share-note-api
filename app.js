@@ -1,13 +1,14 @@
-import express from "express";
 import bodyParser from "body-parser";
+import cors from "cors";
+import "dotenv/config";
+import express from "express";
 import mongoose from "mongoose";
 import noteRoutes from "./routes/note.js";
-
-import "dotenv/config";
 
 const app = express();
 
 app.use(bodyParser.json());
+app.use(cors());
 
 app.use(noteRoutes);
 
