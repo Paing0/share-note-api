@@ -15,8 +15,8 @@ router.post(
       .trim()
       .isLength({ min: 3 })
       .withMessage("Title must be at least 3 characters.")
-      .isLength({ max: 30 })
-      .withMessage("Title must not be over 30 characters."),
+      .isLength({ max: 100 })
+      .withMessage("Title must not be over 100 characters."),
     body("content")
       .trim()
       .isLength({ min: 3 })
@@ -30,5 +30,11 @@ router.get("/notes/:id", noteController.getNote);
 
 // DELETE /delete/:id
 router.delete("/delete/:id", noteController.deleteNote);
+
+// GET /edit/:id
+router.get("/edit/:id", noteController.getOldNote);
+
+// PATCH /edit
+router.patch("/edit", noteController.updateNote);
 
 export default router;

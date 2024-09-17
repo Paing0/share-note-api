@@ -83,12 +83,59 @@ export const deleteNote = async (req, res, next) => {
       });
     }
 
-    res.status(204).json({
-      message: "Note deleted",
-    });
+    res.status(204).json({});
   } catch (error) {
     res.status(500).json({
       message: "Failed to delete note",
+      error: error.message,
+    });
+  }
+};
+
+// GET /edit/:id
+export const getOldNote = async (req, res, next) => {
+  const { id } = req.params;
+
+  try {
+    const note = await Note.findById(id);
+
+    if (!note) {
+      return res.status(404).json({
+        message: "Note not found",
+      });
+    }
+
+    res.status(200).json(note);
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to get old note",
+      error: error.message,
+    });
+  }
+};
+
+// PATCH /edit
+export const updateNote = async (req, res, next) => {
+  const { note_id, title, content } = req.body;
+  try {
+    const note = await Note.findByIdAndUpdate(
+      note_id,
+      { title, content },
+      { new: true },
+    );
+
+    if (!note) {
+      return res.status(404).json({
+        message: "Note not found",
+      });
+    }
+
+    res.status(200).json({
+      message: "Note updated",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to update old note",
       error: error.message,
     });
   }
