@@ -1,9 +1,10 @@
 import { validationResult } from "express-validator";
 
 import Note from "../models/note.js";
+import { unlink } from "../utils/unlink.js";
 
 // GET /notes
-export const getNotes = async (req, res, next) => {
+export const getNotes = async (_req, res) => {
   try {
     // Fetch and sort notes from db by latest note
     const notes = await Note.find().sort({ createdAt: -1 });
@@ -24,11 +25,12 @@ export const getNotes = async (req, res, next) => {
 };
 
 // POST /notes
-export const createNote = async (req, res, next) => {
+export const createNote = async (req, res) => {
   // Get errors from validationResult which is checked in routes
   const errors = validationResult(req);
   const { title, content } = req.body;
 
+  const cover_image = req.file;
   if (!errors.isEmpty()) {
     return res.status(500).json({
       message: "Validation failed",
@@ -37,7 +39,11 @@ export const createNote = async (req, res, next) => {
   }
 
   try {
-    await Note.create({ title, content });
+    await Note.create({
+      title,
+      content,
+      cover_image: cover_image ? cover_image.path : "",
+    });
 
     res.status(201).json({
       message: "Note created",
@@ -51,7 +57,7 @@ export const createNote = async (req, res, next) => {
 };
 
 // GET /notes/:id
-export const getNote = async (req, res, next) => {
+export const getNote = async (req, res) => {
   const { id } = req.params;
   try {
     const note = await Note.findById(id);
@@ -72,10 +78,10 @@ export const getNote = async (req, res, next) => {
 };
 
 // DELETE /notes/:id
-export const deleteNote = async (req, res, next) => {
+export const deleteNote = async (req, res) => {
   const { id } = req.params;
   try {
-    const note = await Note.findByIdAndDelete(id);
+    const note = await Note.findById(id);
 
     if (!note) {
       return res.status(404).json({
@@ -83,7 +89,14 @@ export const deleteNote = async (req, res, next) => {
       });
     }
 
-    res.status(204).json({});
+    // delete cover_image
+    if (note.cover_image) {
+      unlink(note.cover_image);
+    }
+
+    await Note.findByIdAndDelete(id);
+
+    res.status(204).json();
   } catch (error) {
     res.status(500).json({
       message: "Failed to delete note",
@@ -93,7 +106,7 @@ export const deleteNote = async (req, res, next) => {
 };
 
 // GET /edit/:id
-export const getOldNote = async (req, res, next) => {
+export const getOldNote = async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -115,20 +128,31 @@ export const getOldNote = async (req, res, next) => {
 };
 
 // PATCH /edit
-export const updateNote = async (req, res, next) => {
+export const updateNote = async (req, res) => {
   const { note_id, title, content } = req.body;
+  const cover_image = req.file;
+
   try {
-    const note = await Note.findByIdAndUpdate(
-      note_id,
-      { title, content },
-      { new: true },
-    );
+    // Find the note by ID
+    const note = await Note.findById(note_id);
 
     if (!note) {
       return res.status(404).json({
         message: "Note not found",
       });
     }
+
+    // Update the note's fields
+    note.title = title;
+    note.content = content;
+    // If there's a new cover image, delete the old one
+    if (cover_image) {
+      unlink(note.cover_image);
+      note.cover_image = cover_image.path;
+    }
+
+    // Save the updated note
+    await note.save();
 
     res.status(200).json({
       message: "Note updated",

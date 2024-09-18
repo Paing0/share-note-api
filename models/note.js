@@ -18,6 +18,9 @@ const noteSchema = new Schema(
       type: String,
       default: "Anonymous",
     },
+    cover_image: {
+      type: String,
+    },
   },
   {
     timestamps: true, // Automatically add 'createdAt' and 'updatedAt' fields
