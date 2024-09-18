@@ -4,10 +4,28 @@ import Note from "../models/note.js";
 import { unlink } from "../utils/unlink.js";
 
 // GET /notes
-export const getNotes = async (_req, res) => {
+export const getNotes = async (req, res) => {
+  const currentPage = req.query.page || 1;
+  const perPage = 6;
+  let totalNotes;
+  let totalPages;
   try {
+    try {
+      totalNotes = await Note.find().countDocuments();
+
+      totalPages = Math.ceil(totalNotes / perPage);
+    } catch (error) {
+      res.status(500).json({
+        message: "Failed to retrieve notes",
+        error: error.message,
+      });
+    }
+
     // Fetch and sort notes from db by latest note
-    const notes = await Note.find().sort({ createdAt: -1 });
+    const notes = await Note.find()
+      .sort({ createdAt: -1 })
+      .skip((currentPage - 1) * perPage)
+      .limit(perPage);
 
     if (!notes) {
       return res.status(404).json({
@@ -15,7 +33,7 @@ export const getNotes = async (_req, res) => {
       });
     }
 
-    res.status(200).json(notes);
+    res.status(200).json({ notes, totalNotes, totalPages });
   } catch (error) {
     res.status(500).json({
       message: "Failed to retrieve notes",
