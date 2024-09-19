@@ -10,18 +10,10 @@ export const getNotes = async (req, res) => {
   let totalNotes;
   let totalPages;
   try {
-    try {
-      totalNotes = await Note.find().countDocuments();
+    totalNotes = await Note.find().countDocuments();
 
-      totalPages = Math.ceil(totalNotes / perPage);
-    } catch (error) {
-      res.status(500).json({
-        message: "Failed to retrieve notes",
-        error: error.message,
-      });
-    }
-
-    // Fetch and sort notes from db by latest note
+    totalPages = Math.ceil(totalNotes / perPage);
+    // Fetch and sort notes from db by latest (newest first)
     const notes = await Note.find()
       .sort({ createdAt: -1 })
       .skip((currentPage - 1) * perPage)
@@ -46,15 +38,15 @@ export const getNotes = async (req, res) => {
 export const createNote = async (req, res) => {
   // Get errors from validationResult which is checked in routes
   const errors = validationResult(req);
-  const { title, content } = req.body;
-
-  const cover_image = req.file;
   if (!errors.isEmpty()) {
     return res.status(400).json({
       message: "Validation failed",
       errorMessages: errors.array(),
     });
   }
+
+  const { title, content } = req.body;
+  const cover_image = req.file;
 
   try {
     await Note.create({

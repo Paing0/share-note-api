@@ -23,9 +23,9 @@ router.post(
     body("username")
       .trim()
       .isLength({ min: 3 })
-      .withMessage("Username must be at least 3 characters.")
+      .withMessage("Username must be at least 3 characters")
       .isLength({ max: 10 })
-      .withMessage("Username must not be over 10 characters.")
+      .withMessage("Username must not be over 10 characters")
       .custom(async (value) => {
         const userDoc = await User.findOne({ username: value });
         if (userDoc) {
@@ -36,9 +36,26 @@ router.post(
     body("password")
       .trim()
       .isLength({ min: 4 })
-      .withMessage("Username must be at least 4 characters."),
+      .withMessage("Password must be at least 4 characters"),
   ],
   authController.register,
+);
+
+// POST /login
+router.post(
+  "/login",
+  [
+    body("email")
+      .isEmail()
+      .withMessage("Please enter an valid email")
+      .normalizeEmail(),
+
+    body("password")
+      .trim()
+      .isLength({ min: 4 })
+      .withMessage("Password must be at least 4 characters"),
+  ],
+  authController.login,
 );
 
 export default router;
