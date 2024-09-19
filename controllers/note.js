@@ -50,7 +50,7 @@ export const createNote = async (req, res) => {
 
   const cover_image = req.file;
   if (!errors.isEmpty()) {
-    return res.status(500).json({
+    return res.status(400).json({
       message: "Validation failed",
       errorMessages: errors.array(),
     });

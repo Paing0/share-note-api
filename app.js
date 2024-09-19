@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
+import authRoutes from "./routes/auth.js";
 import noteRoutes from "./routes/note.js";
 
 const app = express();
@@ -47,6 +48,7 @@ app.use(
 app.use(cors());
 
 app.use(noteRoutes);
+app.use(authRoutes);
 
 // Database and server connection
 const startServer = async () => {
