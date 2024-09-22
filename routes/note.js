@@ -1,6 +1,7 @@
 import express from "express";
 import { body } from "express-validator";
 import * as noteController from "../controllers/note.js";
+import authMiddleware from "../middlewares/isAuth.js";
 
 const router = express.Router();
 
@@ -10,6 +11,7 @@ router.get("/notes", noteController.getNotes);
 // POST /create
 router.post(
   "/create",
+  authMiddleware,
   [
     body("title")
       .trim()
@@ -29,12 +31,12 @@ router.post(
 router.get("/notes/:id", noteController.getNote);
 
 // DELETE /delete/:id
-router.delete("/delete/:id", noteController.deleteNote);
+router.delete("/delete/:id", authMiddleware, noteController.deleteNote);
 
 // GET /edit/:id
 router.get("/edit/:id", noteController.getOldNote);
 
 // PATCH /edit
-router.patch("/edit", noteController.updateNote);
+router.patch("/edit", authMiddleware, noteController.updateNote);
 
 export default router;

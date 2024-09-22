@@ -19,10 +19,6 @@ const userSchema = new Schema({
     required: true,
     minLength: 4,
   },
-  notes: {
-    type: Schema.Types.ObjectId,
-    ref: "Note",
-  },
 });
 
 // Create the model for the 'Note' schema

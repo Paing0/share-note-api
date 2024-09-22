@@ -1,4 +1,4 @@
-import { model, Schema } from "mongoose";
+import { model, Schema, SchemaTypes } from "mongoose";
 
 // Define the schema for the 'Note' collection
 const noteSchema = new Schema(
@@ -15,8 +15,9 @@ const noteSchema = new Schema(
       minLength: 3,
     },
     author: {
-      type: String,
-      default: "Anonymous",
+      type: SchemaTypes.ObjectId,
+      ref: "User",
+      required: true,
     },
     cover_image: {
       type: String,

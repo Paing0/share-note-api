@@ -53,6 +53,7 @@ export const createNote = async (req, res) => {
       title,
       content,
       cover_image: cover_image ? cover_image.path : "",
+      author: req.userId,
     });
 
     res.status(201).json({
@@ -70,7 +71,7 @@ export const createNote = async (req, res) => {
 export const getNote = async (req, res) => {
   const { id } = req.params;
   try {
-    const note = await Note.findById(id);
+    const note = await Note.findById(id).populate("author", "username");
 
     if (!note) {
       return res.status(404).json({
@@ -156,7 +157,7 @@ export const updateNote = async (req, res) => {
     note.title = title;
     note.content = content;
     // If there's a new cover image, delete the old one
-    if (cover_image) {
+    if (cover_image && note.cover_image) {
       unlink(note.cover_image);
       note.cover_image = cover_image.path;
     }
