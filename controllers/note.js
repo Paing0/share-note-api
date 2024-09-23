@@ -100,8 +100,12 @@ export const deleteNote = async (req, res) => {
       });
     }
 
-    // delete cover_image
+    if (note.author.toString() !== req.userId) {
+      return res.status(401).json("Authentication failed");
+    }
+
     if (note.cover_image) {
+      // delete cover_image
       unlink(note.cover_image);
     }
 
@@ -129,6 +133,10 @@ export const getOldNote = async (req, res) => {
       });
     }
 
+    if (note.author.toString() !== req.userId) {
+      return res.status(401).json("Authentication failed");
+    }
+
     res.status(200).json(note);
   } catch (error) {
     res.status(500).json({
@@ -151,6 +159,10 @@ export const updateNote = async (req, res) => {
       return res.status(404).json({
         message: "Note not found",
       });
+    }
+
+    if (note.author.toString() !== req.userId) {
+      return res.status(401).json("Authentication failed");
     }
 
     // Update the note's fields
