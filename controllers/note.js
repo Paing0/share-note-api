@@ -17,7 +17,8 @@ export const getNotes = async (req, res) => {
     const notes = await Note.find()
       .sort({ createdAt: -1 })
       .skip((currentPage - 1) * perPage)
-      .limit(perPage);
+      .limit(perPage)
+      .populate("author", "username");
 
     if (!notes) {
       return res.status(404).json({
